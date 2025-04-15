@@ -1,28 +1,46 @@
-
-import { useState } from 'react';
-import { fakeLoginApi } from '@/utils/api';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { dummyUser } from "@/data/dummyUser";
 
 export const useLogin = () => {
-  const [serverError, setServerErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
+  const router = useRouter();
 
-  const handleLogin = async (data: { npk: string; password: string; remember?: boolean }) => {
-    setServerErrorMessage(null);
+  const handleLogin = async ({
+    npk,
+    password,
+    remember,
+  }: {
+    npk: string;
+    password: string;
+    remember: boolean;
+  }) => {
     setIsLoading(true);
-    
-    try {
-      await fakeLoginApi(data);
-      // Handle success
-    } catch (error) {
-      if (error instanceof Error) {
-        setServerErrorMessage(error.message);
-      } else {
-        setServerErrorMessage('NPK/Kata Sandi tidak sesuai');
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    setServerError("");
+
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        if (npk === dummyUser.npk && password === dummyUser.password) {
+          const { ...userWithoutPassword } = dummyUser;
+          localStorage.setItem("user", JSON.stringify(userWithoutPassword));
+          if (remember) {
+            localStorage.setItem("rememberMe", "true");
+          }
+          router.push("/homepage");
+          resolve(); // hanya resolve jika sukses
+        } else {
+          setServerError("NPK/Kata Sandi tidak sesuai");
+        }
+        setIsLoading(false);
+      }, 1000);
+    });
   };
 
-return { serverError, isLoading, handleLogin, setServerErrorMessage };
+  return {
+    isLoading,
+    serverError,
+    handleLogin,
+    setServerError,
+  };
 };

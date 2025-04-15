@@ -47,10 +47,11 @@ export default function FormLupaSandi() {
 
   // 🧼 Sembunyikan error saat input dikosongkan
   useEffect(() => {
-    if (!emailValue) {
+    if (!emailValue || emailValue === "") {
       setShowErrors(false);
     }
   }, [emailValue]);
+  
 
   // ⏲️ Hitung mundur 20 detik
   useEffect(() => {
@@ -98,7 +99,7 @@ export default function FormLupaSandi() {
 
   // 🔒 Cek apakah email valid untuk kontrol tombol
   const isEmailValid = !errors.email && emailValue?.match(/@acc\.co\.id$/);
-  const isButtonDisabled = showErrors && !isEmailValid;
+  const isButtonDisabled = showErrors || !isEmailValid;
 
   return (
     <form
@@ -148,29 +149,31 @@ export default function FormLupaSandi() {
 
         {/* 📩 Input Email */}
         <div className="space-y-1.5">
-          <InputText
-            name="email"
-            label="Email"
-            placeholder="contoh@acc.co.id"
-            register={register}
-            error={showErrors ? errors.email : undefined} // Tampilkan error jika diminta
-            suppressErrorStyle={!showErrors} // Sembunyikan style merah sebelum klik
-            type="email"
-            required
-            disabled={isSubmitted && isEmailDisabled} // Disable saat tunggu
-            onChange={(e) => {
-              console.log("Input berubah:", e.target.value); // Bisa hapus jika tidak perlu
-            }}
-          />
+        <InputText
+  name="email"
+  label="Email"
+  placeholder="contoh@acc.co.id"
+  register={register}
+  error={emailValue ? errors.email : undefined} // Hanya tampilkan error jika ada input
+  suppressErrorStyle={!emailValue || !errors.email} // Hilangkan style merah saat kosong
+  type="email"
+  required
+  disabled={isSubmitted && isEmailDisabled}
+  onChange={(e) => {
+    console.log("Input berubah:", e.target.value);
+  }}
+/>
+
 
           {/* 🧯 Pesan error */}
           <HelperErrorText
-            error={showErrors ? errors.email : undefined}
-            messages={{
-              required: "Email wajib diisi",
-              matches: "Format email tidak sesuai",
-            }}
-          />
+  error={emailValue ? errors.email : undefined} // Sembunyikan jika kosong
+  messages={{
+    required: "Email wajib diisi",
+    matches: "Format email tidak sesuai",
+  }}
+/>
+
         </div>
 
         {/* 🚪 Tombol kirim atau kirim ulang */}

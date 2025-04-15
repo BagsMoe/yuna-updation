@@ -1,0 +1,115 @@
+'use client'
+
+// Import komponen dan ikon yang diperlukan
+import Image from "next/image";
+import { HouseLine, UserGear, Rows, Wrench, SignOut } from '@phosphor-icons/react';
+import Link from "next/link";
+import { usePathname } from "next/navigation"; // Hook untuk mengetahui path URL saat ini
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { SignOutCard } from "@/components/atoms/Cards/SignOutCard";
+
+export default function SidebarPostAuth() {
+  const pathname = usePathname(); // Mendapatkan path halaman yang sedang aktif
+  const [showSignOutModal, setShowSignOutModal] = useState(false); // State untuk mengontrol apakah modal keluar ditampilkan
+
+  // Fungsi untuk membuka modal keluar
+  const handleSignOut = () => {
+    setShowSignOutModal(true);
+  };
+
+  return (
+    <>
+      {/* Sidebar */}
+      <aside className="flex flex-col justify-between items-center w-[280px] border-none h-full py-[58px] px-6 bg-[#F5F5F5]">
+        <div className="flex flex-col justify-between w-full h-full">
+
+          {/* Bagian atas sidebar: logo dan menu navigasi */}
+          <div className="flex flex-col items-center gap-[49px] w-[232px] h-full">
+            <Image
+              src="/sidebarlogo.png"
+              alt="Logo"
+              width={191}
+              height={32}
+              className="object-cover rounded-xl"
+              priority={true}
+            />
+
+            {/* Navigasi utama */}
+            <div className="flex flex-col w-full">
+              {/* Link ke Halaman Utama */}
+              <Link
+                href="/homepage"
+                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors ${
+                  pathname === "/homepage"
+                    ? "bg-[#165FF0] text-white" // Aktif
+                    : "bg-transparent text-[#222222] hover:bg-[#165FF0] hover:text-white active:bg-[#165FF0]" // Non-aktif
+                }`}
+              >
+                <HouseLine size={18} weight="fill" /> Halaman Utama
+              </Link>
+
+              {/* Link ke Daftar Nomor */}
+              <Link
+                href="/daftar-nomor"
+                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors ${
+                  pathname === "/daftar-nomor"
+                    ? "bg-[#165FF0] text-white"
+                    : "bg-transparent text-[#222222] hover:bg-[#165FF0] hover:text-white active:bg-[#165FF0]"
+                }`}
+              >
+                <Rows size={18} weight="fill" /> Daftar Nomor
+              </Link>
+
+              {/* Link ke Kelola Akses */}
+              <Link
+                href="/kelola-akses"
+                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors ${
+                  pathname === "/kelola-akses"
+                    ? "bg-[#165FF0] text-white"
+                    : "bg-transparent text-[#222222] hover:bg-[#165FF0] hover:text-white active:bg-[#165FF0]"
+                }`}
+              >
+                <UserGear size={18} weight="fill" /> Kelola Akses
+              </Link>
+            </div>
+          </div>
+
+          {/* Bagian bawah sidebar: pengaturan dan tombol keluar */}
+          <div className="flex flex-col w-[232px]">
+            {/* Link ke Pengaturan Akun */}
+            <Link
+              href="/pengaturan-akun"
+              className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors ${
+                pathname === "/pengaturan-akun"
+                  ? "bg-[#165FF0] text-white"
+                  : "bg-transparent text-[#222222] hover:bg-[#165FF0] hover:text-white active:bg-[#165FF0]"
+              }`}
+            >
+              <Wrench size={18} weight="fill" /> Pengaturan
+            </Link>
+
+            {/* Tombol keluar (membuka modal konfirmasi keluar) */}
+            <Button
+              onClick={handleSignOut} // ketika diklik, buka modal
+              className="flex gap-1.5 justify-start items-center w-[232px] h-12 bg-transparent rounded-[8px] hover:bg-red-700 active:bg-red-700 px-[14px] py-[28px] text-[#222222] hover:text-white group"
+            >
+              <SignOut size={18} weight="fill" className="text-red-700 rotate-180 group-hover:text-white" /> Keluar
+            </Button>
+          </div>
+        </div>
+      </aside>
+
+      {/* SignOut Modal */}
+      <SignOutCard
+        isOpen={showSignOutModal} // Tampilkan modal jika state true
+        imageSrc="/WalkOut.png" // Gambar dalam modal
+        title="Keluar dari Dashboard!" // Judul modal
+        message="Anda akan keluar dari dashboard. Apakah Anda yakin?" // Pesan modal
+        buttonText="Batal" // Teks tombol batal
+        buttonText2="Ya, Keluar" // Teks tombol konfirmasi keluar
+        onConfirm={() => setShowSignOutModal(false)} // Tutup modal saat tombol batal diklik
+      />
+    </>
+  );
+}

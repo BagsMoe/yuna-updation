@@ -1,62 +1,79 @@
-"use client"; // Menandakan bahwa komponen ini harus dijalankan di sisi klien (Client Component)
+"use client"; // Menandakan ini adalah komponen client-side (Next.js App Router)
 
-import { useForm } from "react-hook-form"; // Import hook untuk menangani form
-import { yupResolver } from "@hookform/resolvers/yup"; // Integrasi schema validasi Yup dengan React Hook Form
-import { ErrorAlert } from "@/components/atoms/Errors/ErrorAlert"; // Komponen untuk menampilkan pesan error dari server
-import { InputText } from "@/components/atoms/Form/InputText"; // Komponen input teks untuk form
-import { InputPassword } from "@/components/atoms/Form/InputPassword"; // Komponen input password
-import { Checkbox } from "@/components/atoms/Form/Checkbox"; // Komponen checkbox
-import { SubmitButton } from "@/components/atoms/SubmitButton"; // Komponen tombol submit
-import { LoginHeader } from "@/components/atoms/LoginHeader"; // Komponen header untuk halaman login
-import * as yup from "yup"; // Yup digunakan untuk membuat schema validasi
-import { useLogin } from "@/hooks/useLogin"; // Custom hook untuk menangani proses login
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 
-// Tipe data untuk form login
+// Komponen UI
+import { ErrorAlert } from "@/components/atoms/Errors/ErrorAlert";
+import { InputText } from "@/components/atoms/Form/InputText";
+import { InputPassword } from "@/components/atoms/Form/InputPassword";
+import { Checkbox } from "@/components/atoms/Form/Checkbox";
+import { SubmitButton } from "@/components/atoms/SubmitButton";
+import { LoginHeader } from "@/components/atoms/LoginHeader";
+
+// Validasi
+import * as yup from "yup";
+
+// Custom hook login
+import { useLogin } from "@/hooks/useLogin";
+
+
+// Tipe data untuk form
 type FormData = {
   npk: string;
   password: string;
   remember: boolean;
 };
 
-// Schema validasi menggunakan Yup
+// Yup schema untuk validasi form
 export const loginSchema = yup.object({
-  npk: yup.string().required("NPK wajib diisi"), // Validasi: harus diisi
-  password: yup.string().required("Kata sandi wajib diisi"), // Validasi: harus diisi
-  remember: yup.boolean().default(false).required(), // Nilai default false, tetap wajib diisi
+  npk: yup.string().required("NPK wajib diisi"),
+  password: yup.string().required("Kata sandi wajib diisi"),
+  remember: yup.boolean().default(false).required(),
 });
 
 export default function HalamanMasuk() {
-  // Destruktur dari custom hook useLogin
-  const { serverError, isLoading, handleLogin } = useLogin();
+  // Ambil state & function dari custom hook login
+  const { serverError, isLoading, handleLogin, setServerError } = useLogin();
 
-  // Inisialisasi React Hook Form dengan schema validasi Yup
+  // Setup form react-hook-form + yup
   const {
-    register, // Fungsi untuk mendaftarkan input ke form
-    handleSubmit, // Fungsi untuk menangani submit form
-    formState: { errors, isValid }, // Objek untuk error dan validasi form
+    register,            // Untuk registrasi field input
+    handleSubmit,        // Untuk handle submit form
+    watch,               // Untuk observasi perubahan nilai input
+    formState: { errors, isValid }, // Validasi dan error form
   } = useForm<FormData>({
-    resolver: yupResolver(loginSchema), // Integrasi Yup sebagai resolver
-    mode: "onChange", // Validasi akan dilakukan setiap kali ada perubahan input
+    resolver: yupResolver(loginSchema), // Integrasi Yup ke RHF
+    mode: "onChange",                   // Validasi otomatis saat input berubah
     defaultValues: {
-      remember: false, // Nilai default checkbox
+      remember: false,                  // Checkbox default: tidak dicentang
     },
   });
 
-  // Fungsi yang akan dipanggil saat form disubmit
+  // Reset server error ketika user mulai mengubah NPK atau password
+  const npkValue = watch("npk");
+  const passwordValue = watch("password");
+  
+  useEffect(() => {
+    setServerError("");
+  }, [npkValue, passwordValue, setServerError]);
+  
+  // Handler submit form
   const onSubmit = async (data: FormData) => {
-    await handleLogin(data); // Kirim data ke fungsi login
+    await handleLogin(data);
   };
 
   return (
     <div className="flex flex-1/2 justify-center items-center py-16">
       <form
-        onSubmit={handleSubmit(onSubmit)} // Tangani submit form dengan validasi
-        className="w-[400px] p-0 m-0 bg-white space-y-6" // Styling form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-[400px] p-0 m-0 bg-white space-y-6"
       >
-        {/* Header halaman login */}
+        {/* Judul halaman login */}
         <LoginHeader />
 
-        {/* Tampilkan error dari server jika ada */}
+        {/* Error alert dari server (misal: kombinasi npk/password salah) */}
         {serverError && <ErrorAlert message={serverError} />}
 
         {/* Input NPK */}
@@ -64,22 +81,22 @@ export default function HalamanMasuk() {
           name="npk"
           label="NPK"
           register={register}
-          error={errors.npk}
-          serverError={!!serverError} // Jika ada error server, beri efek styling
+          error={errors.npk || undefined}      // Error dari Yup, akan hilang kalau serverError aktif (bisa di-adjust lagi kalau mau)
+          serverError={!!serverError}          // Untuk styling merah jika ada error dari server
           placeholder="Masukkan NPK"
           required
         />
 
         {/* Input Password */}
-        <InputPassword<"password"> // Tentukan tipe generic
-          register={register("password")} // Daftarkan input ke form
-          error={errors.password}
-          serverError={!!serverError}
+        <InputPassword<"password">
+          register={register("password")}
+          error={errors.password}              // Error dari Yup
+          serverError={!!serverError}          // Styling merah kalau server error
         />
 
-        {/* Checkbox Remember Me dan Link Lupa Sandi */}
+        {/* Checkbox Remember Me + Link lupa password */}
         <div className="flex items-center justify-between">
-          <Checkbox register={register("remember")} /> {/* Checkbox remember */}
+          <Checkbox register={register("remember")} />
           <a
             href="/lupa-sandi"
             className="text-sm text-blue-500 hover:underline"
@@ -90,9 +107,9 @@ export default function HalamanMasuk() {
 
         {/* Tombol Submit */}
         <SubmitButton
-          disabled={!isValid || isLoading || !!serverError} // Disable jika form tidak valid, sedang loading, atau ada error server
-          isLoading={isLoading} // Tampilkan spinner jika sedang loading
-          disabledCursor="not-allowed" // Ubah kursor saat tombol tidak bisa diklik
+          disabled={!isValid || isLoading || !!serverError} // Disable jika: form invalid, sedang loading, atau ada error server
+          isLoading={isLoading}                             // Loading spinner
+          disabledCursor="not-allowed"                      // Ganti cursor saat disable
         />
       </form>
     </div>

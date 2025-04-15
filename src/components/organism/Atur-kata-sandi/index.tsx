@@ -1,70 +1,84 @@
-'use client'; // Menandakan bahwa komponen ini berjalan di sisi klien (Client Component)
+"use client";
 
-import Image from "next/image"; // Import komponen gambar dari Next.js
-import { Button } from "@/components/ui/button"; // Komponen tombol
-import { InputPassword } from "@/components/atoms/Form/InputPassword"; // Komponen input password custom
-import { ErrorComplex } from "@/components/atoms/Errors/ErrorComplex"; // Komponen untuk validasi password kompleks
-import { useForm } from "react-hook-form"; // Hook form dari React Hook Form
-import * as yup from "yup"; // Yup untuk validasi schema
-import { yupResolver } from "@hookform/resolvers/yup"; // Integrasi yup dengan React Hook Form
-import { HelperErrorText } from "@/components/atoms/Errors/HelperErrorText"; // Komponen error helper
-import { useState } from "react"; // React state
-import { SuccessModal } from "@/components/atoms/Modal/SuccessModal"; // Modal setelah sukses submit
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { InputPassword } from "@/components/atoms/Form/InputPassword";
+import { ErrorComplex } from "@/components/atoms/Errors/ErrorComplex";
+import { useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { HelperErrorText } from "@/components/atoms/Errors/HelperErrorText";
+import { useEffect, useState } from "react";
+import { ConfirmCard } from "@/components/atoms/Cards/ConfirmCard";
 
-// Schema validasi menggunakan Yup
+// Validasi Yup
 const schema = yup.object().shape({
   newPassword: yup
     .string()
-    .required(" ") // Required tapi pesan dikosongkan agar tidak ditampilkan default-nya
-    .min(6, " ") // Minimal 6 karakter
-    .matches(/[A-Z]/, "Harus mengandung huruf kapital") // Harus ada huruf kapital
-    .matches(/[a-z]/, "Harus mengandung huruf kecil") // Harus ada huruf kecil
-    .matches(/[!@#$%^&*]/, "Harus mengandung karakter khusus"), // Harus ada karakter khusus
+    .required(" ")
+    .min(6, " ")
+    .matches(/[A-Z]/, "Harus mengandung huruf kapital")
+    .matches(/[a-z]/, "Harus mengandung huruf kecil")
+    .matches(/[!@#$%^&*]/, "Harus mengandung karakter khusus"),
   confirmPassword: yup
     .string()
     .required(" ")
-    .oneOf([yup.ref("newPassword")], "Kata sandi tidak sama"), // Harus sama dengan newPassword
+    .oneOf([yup.ref("newPassword")], "Kata sandi tidak sama"),
 });
 
-// Tipe data input form
+// Tipe data form
 type FormAturSandiData = {
   newPassword: string;
   confirmPassword: string;
 };
 
 export default function FormAturSandi() {
-  // Inisialisasi React Hook Form dengan Yup resolver
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors, isValid },
+    clearErrors,
   } = useForm<FormAturSandiData>({
-    resolver: yupResolver(schema), // Gunakan schema yup untuk validasi
-    mode: "onChange", // Validasi dijalankan setiap ada perubahan input
+    resolver: yupResolver(schema),
+    mode: "onChange",
   });
 
-  // Ambil nilai input secara real-time
+  // Watch field
   const newPassword = watch("newPassword");
   const confirmPassword = watch("confirmPassword");
 
-  // State untuk mengatur tampilan modal sukses
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Status untuk menampilkan confirm card
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(true); // status berhasil/gagal
 
-  // Fungsi saat submit form
+  // Saat error confirm password hilang karena perbaikan, clear error helper text
+  useEffect(() => {
+    if (confirmPassword === newPassword) {
+      clearErrors("confirmPassword");
+    }
+  }, [confirmPassword, newPassword, clearErrors]);
+
+  // Handler submit
   const onSubmit = (data: FormAturSandiData) => {
-    console.log("Password berhasil diubah:", data); // Simulasi response
-    setIsModalOpen(true); // Tampilkan modal setelah submit
+    // Simulasi jika password mengandung %, anggap gagal
+    if (data.newPassword.includes("%") || data.confirmPassword.includes("%")) {
+      setIsSuccess(false);
+    } else {
+      setIsSuccess(true);
+    }
+
+    setIsConfirmOpen(true); // Tampilkan confirm card
   };
 
   return (
     <div className="flex flex-1/2 justify-center items-center py-16">
       <form
-        onSubmit={handleSubmit(onSubmit)} // Handle submit menggunakan handleSubmit dari React Hook Form
+        onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col justify-center items-center p-0 w-[400px]"
       >
         <div className="flex flex-col justify-center items-center gap-10 w-full">
-          {/* Gambar ilustrasi */}
+          {/* Ilustrasi */}
           <Image
             src="/ResetPassword.png"
             alt="Reset Password"
@@ -74,7 +88,7 @@ export default function FormAturSandi() {
           />
 
           <div className="w-full bg-white space-y-6">
-            {/* Judul dan deskripsi */}
+            {/* Judul */}
             <div className="space-y-3">
               <h1 className="text-xl font-semibold">Konfirmasi Kata Sandi!</h1>
               <p className="text-sm text-gray-600">
@@ -86,12 +100,12 @@ export default function FormAturSandi() {
             <div className="gap-2">
               <InputPassword<"newPassword">
                 register={register("newPassword")}
-                error={undefined} // Tidak menampilkan error bawaan yup
+                error={undefined}
                 className="w-full"
                 serverError={false}
                 label="Kata Sandi Baru"
               />
-              {/* Tampilkan validasi kompleks jika ada input */}
+              {/* Validasi kompleks */}
               {newPassword && <ErrorComplex password={newPassword} />}
             </div>
 
@@ -104,8 +118,8 @@ export default function FormAturSandi() {
                 serverError={false}
                 label="Konfirmasi Kata Sandi"
               />
-              {/* Tampilkan pesan error jika password tidak cocok */}
-              {confirmPassword && errors.confirmPassword && (
+              {/* Tampilkan error helper jika tidak cocok */}
+              {errors.confirmPassword && confirmPassword !== "" && (
                 <HelperErrorText
                   error={errors.confirmPassword}
                   messages={{ oneOf: "Kata sandi tidak sama" }}
@@ -114,10 +128,10 @@ export default function FormAturSandi() {
             </div>
           </div>
 
-          {/* Tombol Konfirmasi */}
+          {/* Tombol Submit */}
           <Button
             type="submit"
-            disabled={!isValid} // Disable jika form tidak valid
+            disabled={!isValid} // Disable hanya jika form masih error
             className={`w-full ${
               isValid
                 ? "bg-blue-500 hover:bg-blue-600"
@@ -129,15 +143,26 @@ export default function FormAturSandi() {
         </div>
       </form>
 
-      {/* Modal sukses setelah submit */}
-      <SuccessModal
-        isOpen={isModalOpen}
-        imageSrc="/ResetPassword.png"
-        title="Pembaruan Kata Sandi Berhasil"
-        message="Silahkan kembali ke halaman Login dan masuk dengan kata sandi baru."
+      {/* Konfirmasi setelah submit */}
+      <ConfirmCard
+        isOpen={isConfirmOpen}
+        imageSrc={
+          isSuccess ? "/ResetPassword.png" : "/PasswordFailed.png"
+        }
+        title={
+          isSuccess
+            ? "Pembaruan Kata Sandi Berhasil"
+            : "Pembaruan Kata Sandi Gagal"
+        }
+        message={
+          isSuccess
+            ? "Silahkan kembali ke halaman Login dan masuk dengan kata sandi baru."
+            : "Maaf, proses perubahan kata sandi tidak berhasil. Silahkan kembali ke halaman Login untuk mengulangi proses"
+        }
         buttonText="Kembali Ke Login"
-        redirectPath="/masuk" // Arahkan ke halaman login setelah berhasil
-        onConfirm={() => setIsModalOpen(false)} // Tutup modal jika diklik
+        redirectPath="/masuk"
+        onConfirm={() => {}} // Tidak menutup confirm card, langsung redirect saja
+        
       />
     </div>
   );
