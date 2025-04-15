@@ -1,4 +1,4 @@
-// src/utils/api.ts
+
 type LoginResponse = {
     success: boolean;
     token?: string;

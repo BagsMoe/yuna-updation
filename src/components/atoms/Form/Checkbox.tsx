@@ -6,7 +6,7 @@ type RememberCheckboxProps = {
   register: UseFormRegisterReturn<'remember'>;
 };
 
-export const RememberCheckbox = ({ register }: RememberCheckboxProps) => (
+export const Checkbox = ({ register }: RememberCheckboxProps) => (
   <div className="flex items-center space-x-2">
     <input
       id="remember"
@@ -16,7 +16,7 @@ export const RememberCheckbox = ({ register }: RememberCheckboxProps) => (
     />
     <label
       htmlFor="remember"
-      className="text-sm font-semibold text-gray-900"
+      className="text-sm font-normal text-[#222222]"
     >
       Ingat Saya
     </label>
