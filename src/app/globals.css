@@ -120,3 +120,49 @@
     @apply bg-background text-foreground;
   }
 }
+/* Hilangkan panah di scrollbar */
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Optional: bikin scrollbar lebih clean */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2); /* Bisa kamu ubah ke var(--ring) atau custom color kamu */
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Scrollbar hanya untuk elemen dengan class .scroll-container */
+.scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+/* Hilangkan tombol panah */
+.scroll-container::-webkit-scrollbar-button {
+  display: none;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+

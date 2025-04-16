@@ -13,9 +13,9 @@ import { ErrorComplex } from "@/components/atoms/Errors/ErrorComplex";
 import { Button } from "@/components/ui/button";
 import { NotificationModal } from "@/components/atoms/Cards/NotificationModal";
 
-// Import data user dummy
-import { dummyUser } from "@/data/dummyUser";
-
+interface User {
+  password: string; // Tipe data untuk password
+}
 // Tipe data untuk form
 type FormAturSandiData = {
   oldPassword: string;
@@ -62,30 +62,56 @@ export default function FormCard() {
 
   // Fungsi yang dijalankan saat form disubmit
   const onSubmit = (data: FormAturSandiData) => {
-    // Cek apakah password lama sesuai dengan dummy data
-    if (data.oldPassword !== dummyUser.password) {
+    // Ambil data user dari localStorage
+    const userData = localStorage.getItem("user");
+
+    // Handle jika tidak ada user yang login
+    if (!userData) {
       setError("oldPassword", {
-        message: "Kata sandi yang Anda masukkan salah",
+        message: "Sesi telah berakhir, silakan login kembali",
       });
       setIsSuccess(false);
       setIsModalOpen(true);
       return;
     }
 
-    // Jika benar, tampilkan modal sukses
-    setIsSuccess(true);
-    setIsModalOpen(true);
+    try {
+      // Parse data user
+      const user: User = JSON.parse(userData);
+
+      // Validasi password lama
+      if (data.oldPassword !== user.password) {
+        setError("oldPassword", {
+          message: "Kata sandi yang Anda masukkan salah",
+        });
+        setIsSuccess(false);
+        setIsModalOpen(true);
+        return;
+      }
+
+      // Jika validasi berhasil
+      setIsSuccess(true);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      setError("oldPassword", {
+        message: "Terjadi kesalahan saat memverifikasi password",
+      });
+      setIsSuccess(false);
+      setIsModalOpen(true);
+    }
   };
 
   return (
     <>
-      <h1 className="text-xl font-medium mb-8">Perubahan Kata Sandi</h1>
+      <h1 className="text-xl font-medium">Perubahan Kata Sandi</h1>
 
       {/* Form Perubahan Kata Sandi */}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-4xl space-y-6"
+        className="w-[700px] space-y-6"
       >
+        <div className="flex flex-col">
         {/* Input Kata Sandi Lama */}
         <div className="flex flex-col w-full">
           <InputPassword<"oldPassword">
@@ -108,9 +134,10 @@ export default function FormCard() {
             />
           )}
         </div>
+        </div>
 
         {/* Input Kata Sandi Baru dan Konfirmasi */}
-        <div className="flex flex-row gap-6">
+        <div className="flex justify-center gap-4">
           {/* Kata Sandi Baru */}
           <div className="w-1/2 flex flex-col">
             <InputPassword<"newPassword">
@@ -164,10 +191,10 @@ export default function FormCard() {
       {/* Modal Notifikasi */}
       <NotificationModal
         isOpen={isModalOpen}
-        imageSrc={isSuccess ? "/PasswordChanged.png" : "/ThumbsDown.png"}
+        imageSrc={isSuccess ? "/Password_Changed.png" : "/Thumbs_Down.png"}
         title={
           isSuccess
-            ? "Kata Sandi Berhasil Diubah!"
+            ? "Kata Sandi Berhasil Diubah"
             : "Perubahan Kata Sandi Gagal"
         }
         message={

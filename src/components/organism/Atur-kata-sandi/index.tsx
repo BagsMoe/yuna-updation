@@ -79,14 +79,15 @@ export default function FormAturSandi() {
       >
         <div className="flex flex-col justify-center items-center gap-10 w-full">
           {/* Ilustrasi */}
+          <div className="flex justify-center items-center w-[400px] h-[100px] bg-[#0072FF] rounded-lg">
           <Image
-            src="/ResetPassword.png"
+            src="/SuccessChanged.png"
             alt="Reset Password"
-            width={400}
+            width={159}
             height={100}
             className="object-cover"
           />
-
+        </div>
           <div className="w-full bg-white space-y-6">
             {/* Judul */}
             <div className="space-y-3">
@@ -132,7 +133,7 @@ export default function FormAturSandi() {
           <Button
             type="submit"
             disabled={!isValid} // Disable hanya jika form masih error
-            className={`w-full ${
+            className={`w-full cursor-pointer ${
               isValid
                 ? "bg-blue-500 hover:bg-blue-600"
                 : "bg-gray-300 text-gray-700 cursor-not-allowed"
@@ -147,7 +148,7 @@ export default function FormAturSandi() {
       <ConfirmCard
         isOpen={isConfirmOpen}
         imageSrc={
-          isSuccess ? "/ResetPassword.png" : "/PasswordFailed.png"
+          isSuccess ? "/SuccessChanged.png" : "/FailedChanged.png"
         }
         title={
           isSuccess

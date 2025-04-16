@@ -6,7 +6,7 @@ import * as yup from "yup"; // Validasi skema
 import Image from "next/image";
 import { InputText } from "@/components/atoms/Form/InputText"; // Komponen input kustom
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react"; // Icon panah kiri
+import { ArrowLeft } from "@phosphor-icons/react"; // Icon panah kiri
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // Navigasi di App Router
 import { HelperErrorText } from "@/components/atoms/Errors/HelperErrorText"; // Komponen pesan error custom
@@ -36,7 +36,7 @@ export default function FormLupaSandi() {
   const {
     register,
     trigger, // Untuk manual trigger validasi
-    watch,   // Melihat nilai input secara real-time
+    watch, // Melihat nilai input secara real-time
     formState: { errors },
   } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -51,7 +51,6 @@ export default function FormLupaSandi() {
       setShowErrors(false);
     }
   }, [emailValue]);
-  
 
   // ⏲️ Hitung mundur 20 detik
   useEffect(() => {
@@ -110,21 +109,24 @@ export default function FormLupaSandi() {
       className="flex flex-col flex-1/2 justify-center items-center space-y-10"
     >
       {/* 🖼️ Gambar ilustrasi */}
-      <Image
-        src="/ForgotPassword.png"
-        alt="Forgot Password"
-        width={400}
-        height={100}
-        className="object-cover"
-      />
+      <div className="flex justify-center items-center w-[400px] h-[100px] bg-[#0072FF] rounded-lg">
+        <Image
+          src="/SendEmail.png"
+          alt="Send Email"
+          width={200}
+          height={100}
+          className="object-cover"
+        />
+      </div>
 
+      {/* 📩 Form input email */}
       <div className="w-[400px] space-y-6 bg-white">
         {/* 🔙 Tombol kembali */}
         <a
           href="/masuk"
           className="flex items-center gap-4 text-blue-500 text-sm hover:underline"
         >
-          <ArrowLeft className="w-[18px]" /> Kembali ke Log-in
+          <ArrowLeft className="w-6 h-6" /> Kembali ke Log-in
         </a>
 
         {/* 📝 Judul & deskripsi kondisi tergantung status submit */}
@@ -149,31 +151,29 @@ export default function FormLupaSandi() {
 
         {/* 📩 Input Email */}
         <div className="space-y-1.5">
-        <InputText
-  name="email"
-  label="Email"
-  placeholder="contoh@acc.co.id"
-  register={register}
-  error={emailValue ? errors.email : undefined} // Hanya tampilkan error jika ada input
-  suppressErrorStyle={!emailValue || !errors.email} // Hilangkan style merah saat kosong
-  type="email"
-  required
-  disabled={isSubmitted && isEmailDisabled}
-  onChange={(e) => {
-    console.log("Input berubah:", e.target.value);
-  }}
-/>
-
+          <InputText
+            name="email"
+            label="Email"
+            placeholder="contoh@acc.co.id"
+            register={register}
+            error={emailValue ? errors.email : undefined} // Hanya tampilkan error jika ada input
+            suppressErrorStyle={!emailValue || !errors.email} // Hilangkan style merah saat kosong
+            type="email"
+            required
+            disabled={isSubmitted && isEmailDisabled}
+            onChange={(e) => {
+              console.log("Input berubah:", e.target.value);
+            }}
+          />
 
           {/* 🧯 Pesan error */}
           <HelperErrorText
-  error={emailValue ? errors.email : undefined} // Sembunyikan jika kosong
-  messages={{
-    required: "Email wajib diisi",
-    matches: "Format email tidak sesuai",
-  }}
-/>
-
+            error={emailValue ? errors.email : undefined} // Sembunyikan jika kosong
+            messages={{
+              required: "Email wajib diisi",
+              matches: "Format email tidak sesuai",
+            }}
+          />
         </div>
 
         {/* 🚪 Tombol kirim atau kirim ulang */}

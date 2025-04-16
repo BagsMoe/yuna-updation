@@ -1,42 +1,60 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { dummyUser } from "@/data/dummyUser";
 
+// Tipe untuk data user
+interface User {
+  name: string;
+  npk: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
+// Tipe untuk input form login
+interface LoginFormData {
+  npk: string;
+  password: string;
+  remember: boolean;
+}
+
+// Custom hook untuk proses login
 export const useLogin = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [serverError, setServerError] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);         // State loading
+  const [serverError, setServerError] = useState<string>("");         // State untuk error dari server
   const router = useRouter();
 
-  const handleLogin = async ({
-    npk,
-    password,
-    remember,
-  }: {
-    npk: string;
-    password: string;
-    remember: boolean;
-  }) => {
+  // Fungsi utama untuk handle login
+  const handleLogin = async ({ npk, password, remember }: LoginFormData): Promise<void> => {
     setIsLoading(true);
     setServerError("");
 
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        if (npk === dummyUser.npk && password === dummyUser.password) {
-          const { ...userWithoutPassword } = dummyUser;
-          localStorage.setItem("user", JSON.stringify(userWithoutPassword));
-          if (remember) {
-            localStorage.setItem("rememberMe", "true");
-          }
-          router.push("/homepage");
-          resolve(); // hanya resolve jika sukses
-        } else {
-          setServerError("NPK/Kata Sandi tidak sesuai");
-        }
-        setIsLoading(false);
-      }, 1000);
-    });
-  };
+    try {
+      const res = await fetch("/api/users");
+      const users: User[] = await res.json();
 
+      const matchedUser = users.find(
+        (user) => user.npk === npk && user.password === password
+      );
+
+      if (matchedUser) {
+        // Hapus destructuring yang menghilangkan password
+        localStorage.setItem("user", JSON.stringify(matchedUser)); // Simpan seluruh data user termasuk password
+
+        if (remember) {
+          localStorage.setItem("rememberMe", "true");
+        }
+
+        router.push("/homepage");
+      } else {
+        setServerError("NPK/Kata Sandi tidak sesuai");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setServerError("Terjadi kesalahan saat mengakses data pengguna");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return {
     isLoading,
     serverError,

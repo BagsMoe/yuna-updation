@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeSlash } from "@phosphor-icons/react";
 import { UseFormRegisterReturn, FieldError } from 'react-hook-form';
 import { cn } from '@/lib/utils';
 
@@ -52,9 +52,9 @@ export const InputPassword = <TFieldName extends string = "password">({
           aria-label={showPassword ? "Hide password" : "Show password"}
         >
           {showPassword ? (
-            <EyeOff className="h-5 w-5" />
+            <EyeSlash weight='fill' className="h-5 w-5 text-[#D5D5D5]" />
           ) : (
-            <Eye className="h-5 w-5" />
+            <Eye weight='fill' className="h-5 w-5 text-[#D5D5D5]" />
           )}
         </button>
       </div>

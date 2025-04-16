@@ -20,8 +20,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${dmSans.className} antialiased`}>
-        {children}
+      <body className={`${dmSans.className} antialiased w-screen h-screen overflow-hidden`}>
+        {/* Kontainer dengan scroll khusus */}
+        <div className="h-full overflow-y-auto scroll-container">
+          {children}
+        </div>
       </body>
     </html>
   );

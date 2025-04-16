@@ -45,7 +45,7 @@ export const InputText = <T extends FieldValues>({
     <div>
       <Label htmlFor={name}>
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="text-red-500">*</span>}
       </Label>
       <Input
         id={name}

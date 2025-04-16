@@ -6,3 +6,4 @@ export const dummyUser = {
     role: "Super Admin",
   };
   
+  // ganti pakai array object

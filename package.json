@@ -23,6 +23,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.487.0",
+    "mongodb": "^6.15.0",
+    "mongose": "^0.0.2-security",
     "next": "15.2.4",
     "phosphor-react": "^1.4.1",
     "react": "^19.0.0",

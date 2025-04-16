@@ -98,7 +98,7 @@ export default function HalamanMasuk() {
         <div className="flex items-center justify-between">
           <Checkbox register={register("remember")} />
           <a
-            href="/lupa-sandi"
+            href="/lupa-kata-sandi"
             className="text-sm text-blue-500 hover:underline"
           >
             Lupa Kata Sandi?

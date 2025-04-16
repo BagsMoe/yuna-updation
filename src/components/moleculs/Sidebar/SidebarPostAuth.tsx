@@ -4,18 +4,35 @@
 import Image from "next/image";
 import { HouseLine, UserGear, Rows, Wrench, SignOut } from '@phosphor-icons/react';
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // Hook untuk mengetahui path URL saat ini
+import { usePathname , useRouter } from "next/navigation"; // Hook untuk mengetahui path URL saat ini
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState  } from "react";
 import { SignOutCard } from "@/components/atoms/Cards/SignOutCard";
 
 export default function SidebarPostAuth() {
-  const pathname = usePathname(); // Mendapatkan path halaman yang sedang aktif
-  const [showSignOutModal, setShowSignOutModal] = useState(false); // State untuk mengontrol apakah modal keluar ditampilkan
+  const pathname = usePathname();
+  const router = useRouter();
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
-  // Fungsi untuk membuka modal keluar
-  const handleSignOut = () => {
+  const handleSignOutClick = () => {
     setShowSignOutModal(true);
+  };
+
+  const handleConfirmSignOut = () => {
+    // 1. Hapus data autentikasi
+    localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
+    
+    // 2. Redirect ke halaman masuk
+    router.push('/masuk');
+    
+    // 3. Tutup modal
+    setShowSignOutModal(false);
+  };
+
+  const handleCancelSignOut = () => {
+    // Hanya tutup modal tanpa aksi lain
+    setShowSignOutModal(false);
   };
 
   return (
@@ -25,7 +42,7 @@ export default function SidebarPostAuth() {
         <div className="flex flex-col justify-between w-full h-full">
 
           {/* Bagian atas sidebar: logo dan menu navigasi */}
-          <div className="flex flex-col items-center gap-[49px] w-[232px] h-full">
+          <div className="space-y-[49px]  w-[232px] h-[225px]">
             <Image
               src="/sidebarlogo.png"
               alt="Logo"
@@ -40,7 +57,7 @@ export default function SidebarPostAuth() {
               {/* Link ke Halaman Utama */}
               <Link
                 href="/homepage"
-                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors ${
+                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors text-sm ${
                   pathname === "/homepage"
                     ? "bg-[#165FF0] text-white" // Aktif
                     : "bg-transparent text-[#222222] hover:bg-[#165FF0] hover:text-white active:bg-[#165FF0]" // Non-aktif
@@ -52,7 +69,7 @@ export default function SidebarPostAuth() {
               {/* Link ke Daftar Nomor */}
               <Link
                 href="/daftar-nomor"
-                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors ${
+                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors text-sm ${
                   pathname === "/daftar-nomor"
                     ? "bg-[#165FF0] text-white"
                     : "bg-transparent text-[#222222] hover:bg-[#165FF0] hover:text-white active:bg-[#165FF0]"
@@ -64,7 +81,7 @@ export default function SidebarPostAuth() {
               {/* Link ke Kelola Akses */}
               <Link
                 href="/kelola-akses"
-                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors ${
+                className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors text-sm ${
                   pathname === "/kelola-akses"
                     ? "bg-[#165FF0] text-white"
                     : "bg-transparent text-[#222222] hover:bg-[#165FF0] hover:text-white active:bg-[#165FF0]"
@@ -76,12 +93,11 @@ export default function SidebarPostAuth() {
           </div>
 
           {/* Bagian bawah sidebar: pengaturan dan tombol keluar */}
-          <div className="flex flex-col w-[232px]">
+          <div className="flex flex-col w-[232px]"> 
             {/* Link ke Pengaturan Akun */}
             <Link
               href="/pengaturan-akun"
-              className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors ${
-                pathname === "/pengaturan-akun"
+              className={`flex gap-1.5 justify-start items-center w-[232px] h-12 rounded-[8px] px-[14px] py-[28px] transition-colors text-sm
                   ? "bg-[#165FF0] text-white"
                   : "bg-transparent text-[#222222] hover:bg-[#165FF0] hover:text-white active:bg-[#165FF0]"
               }`}
@@ -91,8 +107,8 @@ export default function SidebarPostAuth() {
 
             {/* Tombol keluar (membuka modal konfirmasi keluar) */}
             <Button
-              onClick={handleSignOut} // ketika diklik, buka modal
-              className="flex gap-1.5 justify-start items-center w-[232px] h-12 bg-transparent rounded-[8px] hover:bg-red-700 active:bg-red-700 px-[14px] py-[28px] text-[#222222] hover:text-white group"
+              onClick={handleSignOutClick } // ketika diklik, buka modal
+              className="flex gap-1.5 justify-start items-center w-[232px] h-12 bg-transparent text-sm rounded-[8px] cursor-pointer transition-colors hover:bg-red-700 active:bg-red-700 px-[14px] py-[28px] text-[#222222] hover:text-white group"
             >
               <SignOut size={18} weight="fill" className="text-red-700 rotate-180 group-hover:text-white" /> Keluar
             </Button>
@@ -102,13 +118,14 @@ export default function SidebarPostAuth() {
 
       {/* SignOut Modal */}
       <SignOutCard
-        isOpen={showSignOutModal} // Tampilkan modal jika state true
-        imageSrc="/WalkOut.png" // Gambar dalam modal
-        title="Keluar dari Dashboard!" // Judul modal
-        message="Anda akan keluar dari dashboard. Apakah Anda yakin?" // Pesan modal
-        buttonText="Batal" // Teks tombol batal
-        buttonText2="Ya, Keluar" // Teks tombol konfirmasi keluar
-        onConfirm={() => setShowSignOutModal(false)} // Tutup modal saat tombol batal diklik
+        isOpen={showSignOutModal}
+        imageSrc="/WalkOut.png"
+        title="Keluar dari Dashboard!"
+        message="Anda akan keluar dari dashboard. Apakah Anda yakin?"
+        buttonText="Batal"
+        buttonText2="Ya, Keluar"
+        onConfirm={handleConfirmSignOut}  // Handle konfirmasi
+        onCancel={handleCancelSignOut}    // Handle pembatalan
       />
     </>
   );

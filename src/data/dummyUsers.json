@@ -1,0 +1,38 @@
+[
+    {
+      "name": "Kevin Joshua Adiyanto Hutagaol",
+      "npk": "20396",
+      "email": "kevin.hutagaol@acc.co.id",
+      "password": "superSecure123",
+      "role": "Super Admin"
+    },
+    {
+      "name": "Sarah Amalia",
+      "npk": "20401",
+      "email": "sarah.amalia@acc.co.id",
+      "password": "passwordSarah01",
+      "role": "Admin"
+    },
+    {
+      "name": "Budi Santoso",
+      "npk": "20405",
+      "email": "budi.santoso@acc.co.id",
+      "password": "budiPassword!",
+      "role": "User"
+    },
+    {
+      "name": "Rina Kartika",
+      "npk": "20412",
+      "email": "rina.kartika@acc.co.id",
+      "password": "rinaSecure456",
+      "role": "User"
+    },
+    {
+      "name": "Andi Pratama",
+      "npk": "20422",
+      "email": "andi.pratama@acc.co.id",
+      "password": "andi1234",
+      "role": "Admin"
+    }
+  ]
+  
