@@ -1,28 +1,24 @@
-"use client";
+'use client'; // Menandakan komponen ini dirender di client-side (Next.js)
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dialog"; // Komponen modal dialog dari UI library
+import { Input } from "@/components/ui/input"; // Komponen input kustom
+import { Button } from "@/components/ui/button"; // Komponen button kustom
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-// import dummyUsers from "@/data/dummyUsers.json";
-// import { ScrollArea } from "@/components/ui/scroll-area";
-// import { SearchInput } from "@/components/atoms/Form/SearchInput";
-import { NotificationModal } from "./NotificationModal";
-import { Trash } from "@phosphor-icons/react";
-import { ConfirmModal } from "@/components/moleculs/Modals/ConfirmModal";
+} from "@/components/ui/select"; // Komponen select/dropdown
+import { Trash } from "@phosphor-icons/react"; // Icon trash dari phosphor-icons
 
+// Tipe data untuk pengguna
 interface UserOption {
   name: string;
   npk: string;
@@ -30,106 +26,54 @@ interface UserOption {
   role: string;
 }
 
+// Props yang dikirim ke komponen EditUserModal
 interface EditUserModalProps {
-  open: boolean;
-  onClose: () => void;
-  onUserEdited: () => void;
-  user: UserOption;
+  open: boolean; // Status terbuka/tidaknya modal
+  onClose: () => void; // Fungsi untuk menutup modal
+  user: UserOption; // Data user yang akan diedit
+  onEditClick: (updatedUser: UserOption) => void; // Fungsi untuk menyimpan perubahan user
+  onDeleteClick: (user: UserOption) => void; // Fungsi untuk menghapus user
 }
 
 const EditUserModal = ({
   open,
   onClose,
-  onUserEdited,
   user,
+  onEditClick,
+  onDeleteClick,
 }: EditUserModalProps) => {
-  const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
-  //   const [search, setSearch] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [showEditConfirm, setShowEditConfirm] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [email, setEmail] = useState(""); // State untuk menyimpan email tanpa domain
+  const [role, setRole] = useState(""); // State untuk role baru
+  const [initialRole, setInitialRole] = useState(""); // State untuk role awal sebelum diedit
 
+  // Saat modal dibuka (user berubah), set nilai awal email & role
   useEffect(() => {
     if (user) {
-      setSelectedUser({
-        name: user.name,
-        npk: user.npk,
-        email: user.email,
-        role: user.role,
-      });
-      setEmail(user.email.replace("@acc.co.id", ""));
-      setRole(user.role);
+      setEmail(user.email.replace("@acc.co.id", "")); // Hanya tampilkan bagian awal email
+      setRole(user.role); // Set role sekarang
+      setInitialRole(user.role); // Simpan role awal
     }
   }, [user]);
 
-  const resetForm = () => {
-    setSelectedUser(null);
-    setEmail("");
-    setRole("");
-    // setSearch("");
+  // Fungsi untuk meng-handle tombol "Ubah"
+  const handleEdit = () => {
+    onEditClick({
+      ...user,
+      email: `${email}@acc.co.id`, // Tambah kembali domain email
+      role,
+    });
   };
 
-  //   const filteredUsers = dummyUsers.filter((user) =>
-  //     `${user.npk} - ${user.name}`.toLowerCase().includes(search.toLowerCase())
-  //   );
-
-  const handleSubmit = () => {
-    setShowEditConfirm(true); // tampilkan modal konfirmasi
-  };
-
-  const handleConfirmSubmit = () => {
-    if (selectedUser && email && role) {
-      const updatedUser = {
-        name: selectedUser.name,
-        npk: selectedUser.npk,
-        email: `${email}@acc.co.id`,
-        role,
-      };
-
-      const stored = localStorage.getItem("users");
-      const users: UserOption[] = stored ? JSON.parse(stored) : [];
-
-      const updatedUsers = users.map((u) =>
-        u.npk === updatedUser.npk ? updatedUser : u
-      );
-
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-      setShowEditConfirm(false); // tutup confirm modal
-      setIsSuccess(true); // trigger notif success
-      setIsModalOpen(true); // tampilkan notifikasi modal
-      onUserEdited(); // reload data
-    }
-  };
-
+  // Fungsi untuk menghapus user
   const handleDelete = () => {
-    setShowDeleteConfirm(true);
-  };
-
-  const handleConfirmDelete = () => {
-    const stored = localStorage.getItem("users");
-    const users: UserOption[] = stored ? JSON.parse(stored) : [];
-
-    const filtered = users.filter((u) => u.npk !== selectedUser?.npk);
-    localStorage.setItem("users", JSON.stringify(filtered));
-
-    setIsSuccess(true);
-    setIsModalOpen(true);
-    setShowDeleteConfirm(false);
-    onUserEdited();
+    onDeleteClick(user);
   };
 
   return (
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          resetForm();
-          onClose();
-        }
+        if (!isOpen) onClose(); // Tutup modal jika dialog ditutup
       }}
     >
       <DialogContent className="w-[500px] px-8 py-6">
@@ -138,135 +82,73 @@ const EditUserModal = ({
         </DialogHeader>
 
         <div className="space-y-4">
-        <div>
-        <label className="block mb-1">Nama</label>
-        <Select disabled value={selectedUser?.npk || ""}>
-        <SelectTrigger className="w-full border-[#D5D5D5] bg-[#EFEFEF]">
-        <SelectValue placeholder="Input Karyawan" />
-        </SelectTrigger>
+          {/* Dropdown nama karyawan (non-editable) */}
+          <div>
+            <label className="block mb-1">Nama</label>
+            <Select disabled value={user.npk}>
+              <SelectTrigger className="w-full border-[#D5D5D5] bg-[#EFEFEF]">
+                <SelectValue placeholder="Input Karyawan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={user.npk}>
+                  {user.npk} - {user.name}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <SelectContent>
-        {selectedUser?.npk && (
-        <SelectItem value={selectedUser.npk}>
-        {selectedUser.npk} - {selectedUser.name}
-        </SelectItem>
-        )}
-        </SelectContent>
-        </Select>
-        </div>
+          {/* Input email dan dropdown role */}
+          <div className="w-full flex gap-4">
+            {/* Email (non-editable) */}
+            <div className="w-full">
+              <label className="mb-1">Email</label>
+              <Input
+                disabled
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="border-[#D5D5D5] bg-[#EFEFEF]"
+              />
+            </div>
+            {/* Role (bisa diganti) */}
+            <div className="w-full">
+              <label className="mb-1">Role</label>
+              <Select onValueChange={setRole} value={role}>
+                <SelectTrigger className="w-full shadow-none border-[#222222]">
+                  <SelectValue placeholder="Pilih Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Super Admin">Super Admin</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="User">User</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-        <div className="w-full flex gap-4">
-        <div className="w-full">
-        <label className="mb-1">Email</label>
-        <Input
-        type="text"
-        placeholder="email@acc.co.id"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        disabled={!!selectedUser}
-        className={`border-[#D5D5D5] ${
-        email ? "bg-[#EFEFEF]" : "bg-white"
-        }`}
-        />
-        </div>
+          {/* Tombol Ubah & Hapus */}
+          <div className="flex justify-start items-center gap-4">
+            <Button
+              disabled={role === initialRole} // Hanya aktif jika role berubah
+              onClick={handleEdit}
+              className={`w-[386px] h-10 text-white ${
+                role !== initialRole
+                  ? "bg-blue-500 hover:bg-blue-600"
+                  : "bg-gray-300 cursor-not-allowed"
+              }`}
+            >
+              Ubah
+            </Button>
 
-        <div className="w-full">
-        <label className="mb-1">Role</label>
-        <Select onValueChange={setRole} value={role}>
-        <SelectTrigger className="w-full shadow-none border-[#222222]">
-        <SelectValue placeholder="Pilih Role" />
-        </SelectTrigger>
-        <SelectContent>
-        <SelectItem value="Super Admin">Super Admin</SelectItem>
-        <SelectItem value="Admin">Admin</SelectItem>
-        <SelectItem value="User">User</SelectItem>
-        </SelectContent>
-        </Select>
+            {/* Tombol icon hapus */}
+            <span
+              onClick={handleDelete}
+              className="w-10 h-10 border border-red-600 rounded-lg p-3 cursor-pointer"
+            >
+              <Trash weight="fill" className="text-red-500 hover:text-red-600" />
+            </span>
+          </div>
         </div>
-        </div>
-
-        <div className="flex justify-start items-center gap-4">
-        <Button
-        disabled={!(selectedUser && email && role)}
-        onClick={handleSubmit}
-        className={`w-[386px] h-10 text-white ${
-        selectedUser && email && role
-        ? "bg-blue-500 hover:bg-blue-600"
-        : "bg-gray-300 cursor-not-allowed"
-        }`}
-        >
-        Ubah
-        </Button>
-
-        <span
-        onClick={handleDelete}
-        className="w-10 h-10 border border-red-600 rounded-lg p-3 cursor-pointer"
-        >
-        <Trash
-        weight="fill"
-        className="text-red-500 hover:text-red-600"
-        />
-        </span>
-        </div>
-</div>
       </DialogContent>
-
-      {/* Modal Notifikasi */}
-      <NotificationModal
-        isOpen={isModalOpen}
-        imageSrc={isSuccess ? "/HighFive.png" : "/Thumbs_Down.png"}
-        title={isSuccess ? "Perubahan Berhasil" : "Perubahan Gagal"}
-        message={
-          isSuccess
-            ? "Data pengguna berhasil diperbarui!"
-            : "Gagal mengubah data pengguna. Silakan coba lagi."
-        }
-        buttonText="Oke"
-        onConfirm={() => {
-        setIsModalOpen(false);
-        resetForm();
-        onClose();
-        }}
-      />
-
-      {/* Modal Konfirmasi Edit */}
-      <ConfirmModal
-        isOpen={showEditConfirm}
-        imageSrc="/Questioning.png"
-        title="Anda hendak melakukan perubahan"
-        message={
-          <>
-            Apakah Anda yakin ingin merubah role{" "}
-            <strong>{selectedUser?.name}</strong> dari{" "}
-            <strong>
-              {selectedUser?.role} - {role}
-            </strong>
-            ?
-          </>
-        }
-        buttonText="Batal"
-        buttonText2="Simpan perubahan"
-        cancelButtonClass="bg-[#FBFBFB] hover:border-red-700 hover:border hover:bg-transparent text-red-700"
-        confirmButtonClass="bg-blue-500 hover:bg-blue-600 text-white"
-        onConfirm={handleConfirmSubmit}
-        onCancel={() => setShowEditConfirm(false)}
-      />
-
-      {/* Modal Konfirmasi Hapus */}
-      <ConfirmModal
-        isOpen={showDeleteConfirm}
-        imageSrc="/Questioning.png"
-        title="Anda hendak melakukan perubahan"
-        message={
-          "Pengguna ini akan dihapus secara permanen dan tidak dapat dikembalikan. Apakah Anda yakin ingin melanjutkan?"
-        }
-        buttonText="Batal"
-        buttonText2="Hapus Data"
-        cancelButtonClass="bg-[#FBFBFB] hover:border-red-700 hover:border hover:bg-transparent text-red-700"
-        confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setShowDeleteConfirm(false)}
-      />
     </Dialog>
   );
 };
