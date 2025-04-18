@@ -11,6 +11,7 @@ import { InputPassword } from "@/components/atoms/Form/InputPassword";
 import { Checkbox } from "@/components/atoms/Form/Checkbox";
 import { SubmitButton } from "@/components/atoms/SubmitButton";
 import { LoginHeader } from "@/components/atoms/LoginHeader";
+import  LoadingOverlay  from "@/components/atoms/Loader/LoadingOverlay";
 
 // Validasi
 import * as yup from "yup";
@@ -66,6 +67,7 @@ export default function HalamanMasuk() {
 
   return (
     <div className="flex flex-1/2 justify-center items-center py-16">
+      { isLoading && <LoadingOverlay /> } {/* Loading spinner */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-[400px] p-0 m-0 bg-white space-y-6"

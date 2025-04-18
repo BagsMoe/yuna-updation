@@ -31,6 +31,7 @@ export const NotificationModal = ({
       <DialogContent
         className="flex flex-col items-center w-[452px] rounded-2xl text-center gap-6 px-8 py-4"
         // Properti khusus untuk menyembunyikan ikon "X" (jika diimplementasikan di komponen DialogContent)
+        showCloseIcon={false}
       >
         <div className="flex flex-col items-center w-[380px] gap-3">
           <Image
@@ -48,7 +49,7 @@ export const NotificationModal = ({
 
         {/* Tombol aksi */}
         <Button
-          className="bg-blue-500 hover:bg-blue-600 text-white w-full" // Tombol dengan warna biru dan hover
+          className="bg-blue-500 hover:bg-blue-600 text-white w-full cursor-pointer" // Tombol dengan warna biru dan hover
           onClick={onConfirm} // Saat tombol diklik, panggil fungsi `onConfirm`
         >
           {buttonText}

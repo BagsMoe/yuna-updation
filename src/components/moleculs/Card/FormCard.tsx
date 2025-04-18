@@ -11,7 +11,7 @@ import { InputPassword } from "@/components/atoms/Form/InputPassword";
 import { HelperErrorText } from "@/components/atoms/Errors/HelperErrorText";
 import { ErrorComplex } from "@/components/atoms/Errors/ErrorComplex";
 import { Button } from "@/components/ui/button";
-import { NotificationModal } from "@/components/atoms/Cards/NotificationModal";
+import { NotificationModal } from "@/components/moleculs/Modals/NotificationModal";
 
 interface User {
   password: string; // Tipe data untuk password
@@ -176,7 +176,7 @@ export default function FormCard() {
             <Button
               type="submit"
               disabled={!isValid} // Disable tombol jika form tidak valid
-              className={`w-[183px] h-[46px] ${
+              className={`w-[183px] h-[46px] cursor-pointer ${
                 isValid
                   ? "bg-blue-500 text-white hover:bg-blue-600"
                   : "bg-[#D5D5D5] text-gray-600 cursor-not-allowed"

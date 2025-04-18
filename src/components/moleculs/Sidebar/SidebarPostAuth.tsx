@@ -7,7 +7,8 @@ import Link from "next/link";
 import { usePathname , useRouter } from "next/navigation"; // Hook untuk mengetahui path URL saat ini
 import { Button } from "@/components/ui/button";
 import { useState  } from "react";
-import { SignOutCard } from "@/components/atoms/Cards/SignOutCard";
+// import { SignOutCard } from "@/components/moleculs/Modals/SignOutModal";
+import { ConfirmModal } from "@/components/moleculs/Modals/ConfirmModal";
 
 export default function SidebarPostAuth() {
   const pathname = usePathname();
@@ -117,7 +118,7 @@ export default function SidebarPostAuth() {
       </aside>
 
       {/* SignOut Modal */}
-      <SignOutCard
+      <ConfirmModal
         isOpen={showSignOutModal}
         imageSrc="/WalkOut.png"
         title="Keluar dari Dashboard!"
@@ -126,6 +127,8 @@ export default function SidebarPostAuth() {
         buttonText2="Ya, Keluar"
         onConfirm={handleConfirmSignOut}  // Handle konfirmasi
         onCancel={handleCancelSignOut}    // Handle pembatalan
+        cancelButtonClass="bg-[#FBFBFB] hover:border-red-700 hover:border hover:bg-transparent text-red-700"
+        confirmButtonClass="bg-[#E15241] hover:bg-red-600 text-white"
       />
     </>
   );

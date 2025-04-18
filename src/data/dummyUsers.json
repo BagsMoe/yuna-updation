@@ -1,38 +1,52 @@
 [
-    {
-      "name": "Kevin Joshua Adiyanto Hutagaol",
-      "npk": "20396",
-      "email": "kevin.hutagaol@acc.co.id",
-      "password": "superSecure123",
-      "role": "Super Admin"
-    },
-    {
-      "name": "Sarah Amalia",
-      "npk": "20401",
-      "email": "sarah.amalia@acc.co.id",
-      "password": "passwordSarah01",
-      "role": "Admin"
-    },
-    {
-      "name": "Budi Santoso",
-      "npk": "20405",
-      "email": "budi.santoso@acc.co.id",
-      "password": "budiPassword!",
-      "role": "User"
-    },
-    {
-      "name": "Rina Kartika",
-      "npk": "20412",
-      "email": "rina.kartika@acc.co.id",
-      "password": "rinaSecure456",
-      "role": "User"
-    },
-    {
-      "name": "Andi Pratama",
-      "npk": "20422",
-      "email": "andi.pratama@acc.co.id",
-      "password": "andi1234",
-      "role": "Admin"
-    }
-  ]
-  
+  {
+    "name": "Kevin Joshua Adiyanto Hutagaol",
+    "npk": "20396",
+    "email": "kevin.hutagaol@acc.co.id",
+    "password": "superSecure123",
+    "role": "Super Admin",
+    "nomorKontrak": "01400602002225548",
+    "nomorRegistrasi": "400602002225548",
+    "idPelanggan": "01400602002225548"
+  },
+  {
+    "name": "Sarah Amalia",
+    "npk": "20401",
+    "email": "sarah.amalia@acc.co.id",
+    "password": "sAmalia#2024",
+    "role": "Admin",
+    "nomorKontrak": "01400602003336789",
+    "nomorRegistrasi": "400602003336789",
+    "idPelanggan": "01400602003336789"
+  },
+  {
+    "name": "Budi Santoso",
+    "npk": "20405",
+    "email": "budi.santoso@acc.co.id",
+    "password": "BudiSecure!88",
+    "role": "User",
+    "nomorKontrak": "01400602004447890",
+    "nomorRegistrasi": "400602004447890",
+    "idPelanggan": "01400602004447890"
+  },
+  {
+    "name": "Rina Kartika",
+    "npk": "20412",
+    "email": "rina.kartika@acc.co.id",
+    "password": "RinaK@2024",
+    "role": "User",
+    "nomorKontrak": "01400602005558901",
+    "nomorRegistrasi": "400602005558901",
+    "idPelanggan": "01400602005558901"
+  },
+  {
+    "name": "Andi Pratama",
+    "npk": "20422",
+    "email": "andi.pratama@acc.co.id",
+    "password": "AndiP#890",
+    "role": "Admin",
+    "nomorKontrak": "01400602006669012",
+    "nomorRegistrasi": "400602006669012",
+    "idPelanggan": "01400602006669012"
+  }
+]
