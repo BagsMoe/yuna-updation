@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Tipe untuk data user
+// Tipe untuk data user yang diambil dari database atau API
 interface User {
   name: string;
   npk: string;
@@ -19,46 +19,63 @@ interface LoginFormData {
 
 // Custom hook untuk proses login
 export const useLogin = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);         // State loading
-  const [serverError, setServerError] = useState<string>("");         // State untuk error dari server
+  // State untuk menandai proses loading saat login
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // State untuk menyimpan error dari server jika terjadi kesalahan
+  const [serverError, setServerError] = useState<string>("");
+
+  // Router dari Next.js untuk navigasi setelah login
   const router = useRouter();
 
-  // Fungsi utama untuk handle login
-  const handleLogin = async ({ npk, password, remember }: LoginFormData): Promise<void> => {
-    setIsLoading(true);
-    setServerError("");
+  // Fungsi utama untuk menangani proses login
+  const handleLogin = async ({
+    npk,
+    password,
+    remember,
+  }: LoginFormData): Promise<void> => {
+    setIsLoading(true);        // Set loading true saat proses login dimulai
+    setServerError("");        // Reset error sebelumnya
 
     try {
+      // Ambil data user dari API lokal
       const res = await fetch("/api/users");
       const users: User[] = await res.json();
 
+      // Cari user yang cocok dengan NPK dan password yang dimasukkan
       const matchedUser = users.find(
         (user) => user.npk === npk && user.password === password
       );
 
       if (matchedUser) {
-        // Hapus destructuring yang menghilangkan password
-        localStorage.setItem("user", JSON.stringify(matchedUser)); // Simpan seluruh data user termasuk password
+        // Simpan data user ke localStorage (termasuk password untuk validasi lokal selanjutnya)
+        localStorage.setItem("userData", JSON.stringify(matchedUser));
 
+        // Jika centang "Ingat Saya", simpan flag di localStorage
         if (remember) {
           localStorage.setItem("rememberMe", "true");
         }
 
+        // Arahkan user ke halaman homepage setelah berhasil login
         router.push("/homepage");
       } else {
+        // Jika tidak ditemukan user yang cocok, tampilkan pesan error
         setServerError("NPK/Kata Sandi tidak sesuai");
       }
     } catch (error) {
+      // Tangani error yang terjadi saat fetch data
       console.error("Error fetching users:", error);
       setServerError("Terjadi kesalahan saat mengakses data pengguna");
     } finally {
+      // Setelah proses selesai, set loading menjadi false
       setIsLoading(false);
     }
   };
+
+  // Return semua state dan fungsi yang dibutuhkan untuk proses login
   return {
-    isLoading,
-    serverError,
-    handleLogin,
-    setServerError,
+    isLoading,         // Status loading untuk ditampilkan di UI
+    serverError,       // Error dari server untuk ditampilkan ke user
+    handleLogin,       // Fungsi utama login
+    setServerError,    // Fungsi untuk reset atau ubah error dari luar
   };
 };

@@ -13,9 +13,11 @@ import { ErrorComplex } from "@/components/atoms/Errors/ErrorComplex";
 import { Button } from "@/components/ui/button";
 import { NotificationModal } from "@/components/moleculs/Modals/NotificationModal";
 
+// Tipe data untuk password user dari localStorage
 interface User {
-  password: string; // Tipe data untuk password
+  password: string;
 }
+
 // Tipe data untuk form
 type FormAturSandiData = {
   oldPassword: string;
@@ -40,7 +42,7 @@ const schema = yup.object().shape({
 });
 
 export default function FormCard() {
-  // Gunakan useForm dari react-hook-form dengan schema validasi dari yup
+  // Hook react-hook-form untuk handle form
   const {
     register,
     handleSubmit,
@@ -49,23 +51,22 @@ export default function FormCard() {
     setError,
   } = useForm<FormAturSandiData>({
     resolver: yupResolver(schema),
-    mode: "onChange", // Validasi dijalankan saat field diubah
+    mode: "onChange",
   });
 
-  // State untuk mengontrol modal dan status perubahan password
+  // State untuk modal dan status berhasil/gagal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Ambil nilai input secara live untuk newPassword dan confirmPassword
+  // Ambil input terbaru untuk password baru dan konfirmasi
   const newPassword = watch("newPassword");
   const confirmPassword = watch("confirmPassword");
 
-  // Fungsi yang dijalankan saat form disubmit
+  // Handler saat form disubmit
   const onSubmit = (data: FormAturSandiData) => {
-    // Ambil data user dari localStorage
-    const userData = localStorage.getItem("user");
+    const userData = localStorage.getItem("userData");
 
-    // Handle jika tidak ada user yang login
+    // Jika user belum login
     if (!userData) {
       setError("oldPassword", {
         message: "Sesi telah berakhir, silakan login kembali",
@@ -76,10 +77,9 @@ export default function FormCard() {
     }
 
     try {
-      // Parse data user
       const user: User = JSON.parse(userData);
 
-      // Validasi password lama
+      // Cek apakah oldPassword sesuai
       if (data.oldPassword !== user.password) {
         setError("oldPassword", {
           message: "Kata sandi yang Anda masukkan salah",
@@ -89,7 +89,7 @@ export default function FormCard() {
         return;
       }
 
-      // Jika validasi berhasil
+      // Jika semua validasi lolos
       setIsSuccess(true);
       setIsModalOpen(true);
     } catch (error) {
@@ -112,28 +112,28 @@ export default function FormCard() {
         className="w-[700px] space-y-6"
       >
         <div className="flex flex-col">
-        {/* Input Kata Sandi Lama */}
-        <div className="flex flex-col w-full">
-          <InputPassword<"oldPassword">
-            register={register("oldPassword")}
-            error={undefined}
-            className={`w-[342px] font-medium ${
-              errors.oldPassword ? "border-red-500" : ""
-            }`}
-            serverError={!!errors.oldPassword}
-            label="Kata Sandi Lama"
-          />
-          {/* Tampilkan pesan error jika password lama salah */}
-          {errors.oldPassword && (
-            <HelperErrorText
-              error={errors.oldPassword}
-              messages={{
-                required: " ",
-                message: "Kata sandi yang Anda masukkan salah",
-              }}
+          {/* Input Kata Sandi Lama */}
+          <div className="flex flex-col w-full">
+            <InputPassword<"oldPassword">
+              register={register("oldPassword")}
+              error={undefined}
+              className={`w-[342px] font-medium ${
+                errors.oldPassword ? "border-red-500" : ""
+              }`}
+              serverError={!!errors.oldPassword}
+              label="Kata Sandi Lama"
             />
-          )}
-        </div>
+            {/* Pesan error jika salah */}
+            {errors.oldPassword && (
+              <HelperErrorText
+                error={errors.oldPassword}
+                messages={{
+                  required: " ",
+                  message: "Kata sandi yang Anda masukkan salah",
+                }}
+              />
+            )}
+          </div>
         </div>
 
         {/* Input Kata Sandi Baru dan Konfirmasi */}
@@ -147,7 +147,7 @@ export default function FormCard() {
               serverError={false}
               label="Kata Sandi Baru"
             />
-            {/* Tampilkan validasi kompleks jika user sudah mulai mengetik */}
+            {/* Validasi kompleks jika user mulai mengetik */}
             {newPassword && <ErrorComplex password={newPassword} />}
           </div>
 
@@ -160,7 +160,7 @@ export default function FormCard() {
               serverError={false}
               label="Konfirmasi Kata Sandi"
             />
-            {/* Tampilkan pesan jika konfirmasi tidak sesuai */}
+            {/* Error jika tidak cocok */}
             {errors.confirmPassword && confirmPassword !== "" && (
               <HelperErrorText
                 error={errors.confirmPassword}
@@ -175,7 +175,7 @@ export default function FormCard() {
           <div className="w-1/2 flex justify-end">
             <Button
               type="submit"
-              disabled={!isValid} // Disable tombol jika form tidak valid
+              disabled={!isValid}
               className={`w-[183px] h-[46px] cursor-pointer ${
                 isValid
                   ? "bg-blue-500 text-white hover:bg-blue-600"

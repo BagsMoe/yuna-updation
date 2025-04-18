@@ -1,12 +1,11 @@
 "use client";
 
-// Import hook React dan komponen lain
 import { useState, useEffect } from "react";
 import EditUserModal from "../Modals/EditUserModal";
 import { ConfirmModal } from "@/components/moleculs/Modals/ConfirmModal";
 import { NotificationModal } from "@/components/moleculs/Modals/NotificationModal";
 
-// Interface untuk mendefinisikan struktur data user
+// Interface untuk mendefinisikan struktur data User
 interface User {
   name: string;
   npk: string;
@@ -14,162 +13,202 @@ interface User {
   email: string;
 }
 
-// Komponen utama tabel user
+// Komponen utama untuk menampilkan dan mengatur interaksi tabel user
 export default function TabelUser({
-  users,             // Data semua user dari parent
-  onUserEdited,      // Callback untuk refresh data setelah update
+  users,
+  onUserEdited,
 }: {
   users: User[];
   onUserEdited: () => void;
 }) {
-  // === State Management ===
 
-  // User yang sedang dipilih untuk diedit
+  // ================== Kumpulan State ====================
+
+  // State untuk user yang dipilih saat klik baris tabel
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
-  // Status pembuka modal edit
+  // State untuk membuka/tutup modal edit
   const [editModalOpen, setEditModalOpen] = useState(false);
-
-  // Status pembuka modal konfirmasi
+  // State untuk membuka/tutup modal konfirmasi
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-
-  // Penanda apakah ini alur delete atau edit
-  const [isDeleteFlow, setIsDeleteFlow] = useState(false);
-
-  // Status pembuka modal notifikasi
+  // State untuk membuka/tutup modal notifikasi
   const [notificationOpen, setNotificationOpen] = useState(false);
-
-  // Status hasil (berhasil/gagal)
+  // State untuk membedakan flow edit dan hapus
+  const [isDeleteFlow, setIsDeleteFlow] = useState(false);
+  // State untuk menandai apakah aksi berhasil
   const [isSuccess, setIsSuccess] = useState(false);
-
-  // Status loading saat konfirmasi
+  // State loading untuk tombol konfirmasi
   const [loading, setLoading] = useState(false);
 
-  // User yang sedang diproses untuk edit atau delete
+  // State untuk menyimpan data user yang akan diproses (edit/hapus)
   const [pendingUser, setPendingUser] = useState<User | null>(null);
-
-  // Role lama sebelum perubahan (untuk ditampilkan di konfirmasi)
+  // Menyimpan role sebelumnya agar bisa dibandingkan saat edit
   const [previousRole, setPreviousRole] = useState<string | null>(null);
 
-  // Data user yang sedang login
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  // State untuk user yang sedang login (dari localStorage)
+  const [currentUser, setCurrentUser] = useState<{
+    npk: string;
+    role: string;
+  } | null>(null);
 
-  // Ambil data user yang sedang login dari localStorage saat awal load
+  // ================== Kumpulan Fungsi ====================
+
+  // Ambil data user yang sedang login dari localStorage saat komponen pertama kali dirender
   useEffect(() => {
-    const storedUser = localStorage.getItem("loggedInUser");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedData = JSON.parse(userData);
+      setCurrentUser({
+        npk: parsedData.npk,
+        role: parsedData.role.toLowerCase(),
+      });
     }
   }, []);
 
-  // Ketika baris tabel diklik, tampilkan modal edit user
+  // Saat user klik salah satu baris di tabel, simpan user tersebut dan buka modal edit
   const handleRowClick = (user: User) => {
     setSelectedUser(user);
     setEditModalOpen(true);
   };
 
-  // Ketika user klik tombol "Ubah" di modal edit
+  // Saat tombol 'Ubah' diklik di modal edit
   const handleEditClick = (updatedUser: User) => {
-    setPreviousRole(selectedUser?.role ?? "");     // Simpan role sebelumnya
-    setPendingUser(updatedUser);                  // Simpan data user yang akan diubah
-    setEditModalOpen(false);                      // Tutup modal edit
-    setIsDeleteFlow(false);                       // Tandai ini bukan proses delete
-    setConfirmModalOpen(true);                    // Tampilkan modal konfirmasi
+    setPreviousRole(selectedUser?.role ?? "");
+    setPendingUser(updatedUser);
+    localStorage.setItem("pendingUser", JSON.stringify(updatedUser)); // simpan sementara di localStorage
+    setEditModalOpen(false);
+    setIsDeleteFlow(false); // ini flow edit
+    setConfirmModalOpen(true);
   };
 
-  // Ketika user klik tombol "Hapus" di modal edit
+  // Saat tombol 'Hapus' diklik di modal edit
   const handleDeleteClick = (user: User) => {
-    setPendingUser(user);                         // Simpan data user yang akan dihapus
-    setEditModalOpen(false);                      // Tutup modal edit
-    setIsDeleteFlow(true);                        // Tandai ini proses delete
-    setConfirmModalOpen(true);                    // Tampilkan modal konfirmasi
+    setPendingUser(user);
+    localStorage.setItem("pendingUser", JSON.stringify(user)); // simpan sementara di localStorage
+    setEditModalOpen(false);
+    setIsDeleteFlow(true); // ini flow hapus
+    setConfirmModalOpen(true);
   };
 
-  // Ketika user klik tombol "Simpan perubahan" atau "Hapus Data"
+  // Saat pengguna menekan tombol konfirmasi di ConfirmModal
   const handleConfirmAction = () => {
-    setLoading(true); // Tampilkan spinner loading
+    setLoading(true); // set loading untuk tombol konfirmasi
 
     setTimeout(() => {
-      if (pendingUser && currentUser) {
-        const stored = localStorage.getItem("users");
-        let allUsers: User[] = stored ? JSON.parse(stored) : [];
+      const storedUsers = localStorage.getItem("users");
+      const pending = localStorage.getItem("pendingUser");
+      const parsedPending: User | null = pending ? JSON.parse(pending) : null;
+      const parsedUsers: User[] = storedUsers ? JSON.parse(storedUsers) : [];
+      let success = false;
 
-        // 🚫 Cegah user menghapus dirinya sendiri
-        if (isDeleteFlow && currentUser.npk === pendingUser.npk) {
-          setIsSuccess(false);             // Tampilkan error
-          setNotificationOpen(true);
-          setConfirmModalOpen(false);
-          setLoading(false);
-          return;
-        }
-
-        // 🚫 Cegah user selain super admin melakukan perubahan
-        if (!isDeleteFlow && currentUser.role !== "super admin") {
-          setIsSuccess(false);             // Tampilkan error
-          setNotificationOpen(true);
-          setConfirmModalOpen(false);
-          setLoading(false);
-          return;
-        }
-
-        // ✅ Hapus user jika delete flow
+      // Validasi: hanya super admin yang bisa edit atau hapus user lain (bukan dirinya sendiri)
+      if (
+        currentUser &&
+        currentUser.role === "super admin" &&
+        parsedPending &&
+        currentUser.npk !== parsedPending.npk
+      ) {
         if (isDeleteFlow) {
-          allUsers = allUsers.filter((u) => u.npk !== pendingUser.npk);
-        } else {
-          // ✅ Update user jika edit flow
-          allUsers = allUsers.map((u) =>
-            u.npk === pendingUser.npk ? pendingUser : u
+          // Proses hapus user
+          const updatedUsers = parsedUsers.filter(
+            (u) => u.npk !== parsedPending.npk
           );
+          localStorage.setItem("users", JSON.stringify(updatedUsers));
+          success = true;
+        } else {
+          // Proses update user
+          const updatedUsers = parsedUsers.map((u) =>
+            u.npk === parsedPending.npk ? parsedPending : u
+          );
+          localStorage.setItem("users", JSON.stringify(updatedUsers));
+          success = true;
         }
-
-        // Simpan hasil perubahan ke localStorage
-        localStorage.setItem("users", JSON.stringify(allUsers));
-        setIsSuccess(true);             // Tampilkan modal sukses
-        setNotificationOpen(true);
-        onUserEdited();                 // Panggil callback refresh data
       }
 
-      setConfirmModalOpen(false);      // Tutup modal konfirmasi
-      setLoading(false);               // Matikan loading
-    }, 1000); // Simulasi delay
+      // Jika user mencoba edit atau hapus dirinya sendiri, blokir
+      if (parsedPending && currentUser?.npk === parsedPending.npk) {
+        success = false;
+      }
+
+      // Update UI sesuai hasil
+      setIsSuccess(success);
+      setConfirmModalOpen(false);
+      setNotificationOpen(true);
+      setLoading(false);
+      localStorage.removeItem("pendingUser");
+
+      // Jika berhasil, panggil fungsi untuk reload data
+      if (success) onUserEdited();
+    }, 1000);
   };
 
-  // Ketika user membatalkan konfirmasi
+  // Jika user batal konfirmasi, buka kembali EditUserModal dengan data sebelumnya
   const handleCancelConfirm = () => {
     setConfirmModalOpen(false);
-    // Jika bukan delete dan user ingin kembali ke edit
-    if (!isDeleteFlow && pendingUser) {
-      setSelectedUser(pendingUser);
+    const pending = localStorage.getItem("pendingUser");
+    const parsedPending: User | null = pending ? JSON.parse(pending) : null;
+
+    if (parsedPending) {
+      setSelectedUser(parsedPending);
       setEditModalOpen(true);
+    }
+
+    localStorage.removeItem("pendingUser");
+  };
+
+  // Fungsi untuk menentukan isi NotificationModal berdasarkan flow dan hasil
+  const getNotificationMessage = (): { title: string; message: string } => {
+    if (isDeleteFlow) {
+      return isSuccess
+        ? {
+            title: "Pengguna berhasil dihapus",
+            message: "pengguna tidak lagi dapat mengakses dashboard",
+          }
+        : {
+            title: "Pengguna gagal dihapus",
+            message:
+              "Data tidak dapat dihapus saat ini. Silakan coba lagi nanti.",
+          };
+    } else {
+      return isSuccess
+        ? {
+            title: "Perubahan berhasil disimpan",
+            message: "Data pengguna berhasil diperbarui",
+          }
+        : {
+            title: "Perubahan Data Gagal",
+            message: "Gagal menyimpan perubahan. Coba lagi nanti.",
+          };
     }
   };
 
+  // Jika data user berubah, sinkronkan kembali selectedUser dari tabel
+  useEffect(() => {
+  const currentSelectedUser = selectedUser; // Simpan nilai saat ini
+  if (currentSelectedUser) {
+    const updatedUser = users.find((u) => u.npk === currentSelectedUser.npk);
+    if (updatedUser) setSelectedUser(updatedUser);
+  }
+}, [users]);
+
   return (
     <>
-      {/* === TABEL USER === */}
+      {/* Tabel data pengguna */}
       <table className="w-full text-sm text-left mt-4">
         <thead className="text-gray-700">
           <tr className="flex justify-start items-center gap-4">
-            <th className="w-[300px] py-2 px-4 border border-gray-300 rounded-xl">
-              Nama
-            </th>
-            <th className="w-[300px] py-2 px-4 border border-gray-300 rounded-xl">
-              NPK
-            </th>
-            <th className="w-[300px] py-2 px-4 border border-gray-300 rounded-xl">
-              Role
-            </th>
+            <th className="w-[300px] py-2 px-4 border border-gray-300 rounded-xl">Nama</th>
+            <th className="w-[300px] py-2 px-4 border border-gray-300 rounded-xl">NPK</th>
+            <th className="w-[300px] py-2 px-4 border border-gray-300 rounded-xl">Role</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user, idx) => {
-            // Hanya ambil dua kata pertama dari nama
             const firstTwoWords = user.name.split(" ").slice(0, 2).join(" ");
             return (
               <tr
                 key={idx}
                 className="hover:bg-gray-50 flex justify-start items-center gap-4 border-b w-[938px] cursor-pointer"
-                onClick={() => handleRowClick(user)} // Saat diklik, buka modal edit
+                onClick={() => handleRowClick(user)}
               >
                 <td className="w-[300px] py-2 px-4">{firstTwoWords}</td>
                 <td className="w-[300px] py-2 px-4">{user.npk}</td>
@@ -180,18 +219,21 @@ export default function TabelUser({
         </tbody>
       </table>
 
-      {/* === MODAL EDIT USER === */}
+      {/* Modal untuk edit user */}
       {selectedUser && (
         <EditUserModal
           open={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
+          onClose={() => {
+            setEditModalOpen(false);
+            setSelectedUser(null);
+          }}
           user={selectedUser}
           onEditClick={handleEditClick}
           onDeleteClick={handleDeleteClick}
         />
       )}
 
-      {/* === MODAL KONFIRMASI === */}
+      {/* Modal konfirmasi edit atau hapus */}
       <ConfirmModal
         isOpen={confirmModalOpen}
         imageSrc="/Questioning.png"
@@ -202,20 +244,29 @@ export default function TabelUser({
         }
         message={
           isDeleteFlow ? (
-            "Pengguna ini akan dihapus secara permanen dan tidak dapat dikembalikan. Apakah Anda yakin ingin melanjutkan?"
+            "Pengguna ini akan dihapus secara permanen dan tidak dapat dikembalikan. " +
+            (currentUser?.npk === pendingUser?.npk
+              ? "[System blocked: Cannot delete yourself]"
+              : "Apakah Anda yakin ingin melanjutkan?")
           ) : (
             <>
-              Apakah Anda yakin ingin merubah role{" "}
-              <strong>{pendingUser?.name}</strong> dari{" "}
-              <strong>{previousRole}</strong> -{" "}
-              <strong>{pendingUser?.role}</strong>?
+              {currentUser?.npk === pendingUser?.npk ? (
+                "[System blocked: Cannot edit your own role]"
+              ) : (
+                <>
+                  Apakah Anda yakin ingin merubah role{" "}
+                  <strong>{pendingUser?.name}</strong> dari{" "}
+                  <strong>{previousRole}</strong> ke{" "}
+                  <strong>{pendingUser?.role}</strong>?
+                </>
+              )}
             </>
           )
         }
         buttonText="Batal"
         buttonText2={isDeleteFlow ? "Hapus Data" : "Simpan perubahan"}
-        cancelButtonClass="bg-[#FBFBFB] hover:border-red-700 hover:border hover:bg-transparent text-red-700"
-        confirmButtonClass={`${
+        cancelButtonClass="bg-[#FBFBFB] hover:border-red-700 hover:border hover:bg-transparent text-red-700 cursor-pointer"
+        confirmButtonClass={`cursor-pointer ${
           isDeleteFlow
             ? "bg-red-600 hover:bg-red-700"
             : "bg-blue-500 hover:bg-blue-600"
@@ -225,20 +276,20 @@ export default function TabelUser({
         loading={loading}
       />
 
-      {/* === MODAL NOTIFIKASI HASIL === */}
+      {/* Modal notifikasi hasil akhir */}
       <NotificationModal
         isOpen={notificationOpen}
         imageSrc={isSuccess ? "/HighFive.png" : "/Thumbs_Down.png"}
-        title={isSuccess ? "Perubahan Berhasil" : "Perubahan Gagal"}
-        message={
-          isSuccess
-            ? "Data pengguna berhasil diperbarui!"
-            : "Gagal mengubah data pengguna. Silakan coba lagi."
-        }
+        title={getNotificationMessage().title}
+        message={getNotificationMessage().message}
         buttonText="Oke"
         onConfirm={() => {
           setNotificationOpen(false);
-          setPendingUser(null); // Reset state setelah modal ditutup
+          // Reset jika gagal, supaya bisa diproses ulang
+          if (!isSuccess) {
+            setPendingUser(null);
+            setSelectedUser(null);
+          }
         }}
       />
     </>

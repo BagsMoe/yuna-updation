@@ -78,12 +78,12 @@ export const ConfirmModal = ({
           {/* Tombol confirm */}
           <Button
             onClick={onConfirm}
-            className={`${confirmButtonClass} w-1/2 h-10`}
+            className={` cursor-pointer ${confirmButtonClass} w-1/2 h-10`}
             disabled={loading} // Disable saat loading
           >
             {/* Tampilkan loading spinner jika sedang loading */}
             {loading ? (
-              <div className="flex items-center gap-2">
+              <div className="cursor-pointer flex items-center gap-2">
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Loading...
               </div>

@@ -20,8 +20,8 @@ export default function SidebarPostAuth() {
   };
 
   const handleConfirmSignOut = () => {
-    // 1. Hapus data autentikasi
-    localStorage.removeItem('user');
+    // 1. Hapus data userData dan rememberMe dari localStorage
+    localStorage.removeItem('userData');
     localStorage.removeItem('rememberMe');
     
     // 2. Redirect ke halaman masuk
@@ -128,7 +128,7 @@ export default function SidebarPostAuth() {
         onConfirm={handleConfirmSignOut}  // Handle konfirmasi
         onCancel={handleCancelSignOut}    // Handle pembatalan
         cancelButtonClass="bg-[#FBFBFB] hover:border-red-700 hover:border hover:bg-transparent text-red-700"
-        confirmButtonClass="bg-[#E15241] hover:bg-red-600 text-white"
+        confirmButtonClass="bg-[#E15241] hover:bg-red-600 "
       />
     </>
   );
